@@ -8,6 +8,7 @@ SCREEN_HEIGHT = 650
 SCREEN_TITLE = "Platformer"
 
 CHARACTER_SCALING = 2
+TILE_SCALING = 2
 
 class MyGame(arcade.Window):
     def __init__(self):
@@ -24,7 +25,16 @@ class MyGame(arcade.Window):
         """
         Setup game. Call for reset
         """
+
+        # Create ground
         self.wall_list = arcade.SpriteList(use_spatial_hash=True)
+        
+        for x in range(21, SCREEN_WITH, 42):
+            wall = arcade.Sprite("images/tile_0001.png", TILE_SCALING)
+            wall.center_x = x
+            wall.center_y = wall.height/2
+            self.wall_list.append(wall)
+
 
         # Setup player sprite
         self.player_list = arcade.SpriteList()
@@ -40,6 +50,7 @@ class MyGame(arcade.Window):
 
         self.clear()
         self.player_list.draw()
+        self.wall_list.draw()
 
 def main():
     """
