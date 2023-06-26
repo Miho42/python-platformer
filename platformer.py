@@ -37,8 +37,11 @@ class MyGame(arcade.Window):
         # Camera that can be used for scrolling the screen
         self.camera = None
 
+        # Camera for GUI elements
+        self.gui_camera = None
+
         # Variable counting number of collected coins
-        self.collected_coins = None
+        self.collected_coins = 0
 
     def setup(self):
         """
@@ -75,6 +78,7 @@ class MyGame(arcade.Window):
             coin.center_y = TILE_WIDTH*1.5
             self.scene.add_sprite("Coins", coin)
 
+        # Keep track of collected coins
         self.collected_coins = 0
 
         # Setup player sprite
@@ -90,6 +94,9 @@ class MyGame(arcade.Window):
 
         # Set up camera
         self.camera =  arcade.Camera(self.width, self.height)
+
+        # Set up GUI camera
+        self.gui_camera = arcade.Camera(self.width, self.height)
 
     def center_camera_to_player(self):
         screen_center_x = self.player_sprite.center_x - (self.camera.viewport_width / 2)
@@ -113,9 +120,23 @@ class MyGame(arcade.Window):
         """
 
         self.clear()
-        self.scene.draw()
 
         self.camera.use()
+        
+        self.scene.draw()
+        
+        self.gui_camera.use()
+        
+        # Draw score on screen, scrolling with viewport
+        score_text = f"Collected coins: {self.collected_coins}"
+        arcade.draw_text(
+            score_text,
+            10,
+            10,
+            arcade.csscolor.WHITE,
+            18,
+        )
+        
 
     def on_update(self, delta_time):
         """
@@ -136,7 +157,6 @@ class MyGame(arcade.Window):
             # Remove coin
             coin.remove_from_sprite_lists()
             self.collected_coins += 1
-            print(self.collected_coins)
 
     def on_key_press(self, key, modifiers):
         """
