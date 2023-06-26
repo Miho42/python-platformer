@@ -37,6 +37,9 @@ class MyGame(arcade.Window):
         # Camera that can be used for scrolling the screen
         self.camera = None
 
+        # Variable counting number of collected coins
+        self.collected_coins = None
+
     def setup(self):
         """
         Setup game. Call for reset
@@ -58,13 +61,21 @@ class MyGame(arcade.Window):
             self.scene.add_sprite("Walls", wall)
 
         # More stuff on ground
-
         coordinate_list = [[TILE_WIDTH*9.5, TILE_WIDTH*1.5]]
 
         for coordinate in coordinate_list:
             wall = arcade.Sprite("images/tile_0071.png", TILE_SCALING)
             wall.position = coordinate
             self.scene.add_sprite("Walls", wall)
+
+        # Coins
+        for x in range(0, SCREEN_WIDTH, 350):
+            coin = arcade.Sprite("images/tile_0179.png")
+            coin.center_x = x
+            coin.center_y = TILE_WIDTH*1.5
+            self.scene.add_sprite("Coins", coin)
+
+        self.collected_coins = 0
 
         # Setup player sprite
         self.player_sprite = arcade.Sprite("images/tile_0019.png", CHARACTER_SCALING)
@@ -116,6 +127,16 @@ class MyGame(arcade.Window):
 
         # Position the camera
         self.center_camera_to_player()
+
+        # Do we hit any coins?
+        coin_hit_list = arcade.check_for_collision_with_list(self.player_sprite, self.scene["Coins"])
+
+        # Loop through coins we hit and remove it
+        for coin in coin_hit_list:
+            # Remove coin
+            coin.remove_from_sprite_lists()
+            self.collected_coins += 1
+            print(self.collected_coins)
 
     def on_key_press(self, key, modifiers):
         """
