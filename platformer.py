@@ -35,6 +35,14 @@ class MyGame(arcade.Window):
             wall.center_y = wall.height/2
             self.wall_list.append(wall)
 
+        # More stuff on ground
+        # Coordinate y is 2.5 times the size og a tile
+        coordinate_list = [[399, 63]]
+
+        for coordinate in coordinate_list:
+            wall = arcade.Sprite("images/tile_0071.png", TILE_SCALING)
+            wall.position = coordinate
+            self.wall_list.append(wall)
 
         # Setup player sprite
         self.player_list = arcade.SpriteList()
