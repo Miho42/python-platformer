@@ -34,6 +34,9 @@ class MyGame(arcade.Window):
         # Physics engine
         self.physics_engine = None
 
+        # Camera that can be used for scrolling the screen
+        self.camera = None
+
     def setup(self):
         """
         Setup game. Call for reset
@@ -74,6 +77,25 @@ class MyGame(arcade.Window):
             self.player_sprite, gravity_constant=GRAVITY, walls=self.scene["Walls"]
         )
 
+        # Set up camera
+        self.camera =  arcade.Camera(self.width, self.height)
+
+    def center_camera_to_player(self):
+        screen_center_x = self.player_sprite.center_x - (self.camera.viewport_width / 2)
+        screen_center_y = self.player_sprite.center_y - (self.camera.viewport_height / 2)
+
+        """
+        # Don't let camera travel past 0
+        if screen_center_x < 0:
+            screen_center_x = 0
+        """
+        if screen_center_y < 0:
+            screen_center_y = 0
+        
+        player_centered = screen_center_x, screen_center_y
+        
+        self.camera.move_to(player_centered)
+
     def on_draw(self):
         """
         Render the screen
@@ -82,6 +104,8 @@ class MyGame(arcade.Window):
         self.clear()
         self.scene.draw()
 
+        self.camera.use()
+
     def on_update(self, delta_time):
         """
         Movement and game logic
@@ -89,6 +113,9 @@ class MyGame(arcade.Window):
 
         # Move the player with the physics engine
         self.physics_engine.update()
+
+        # Position the camera
+        self.center_camera_to_player()
 
     def on_key_press(self, key, modifiers):
         """
