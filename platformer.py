@@ -18,48 +18,49 @@ class MyGame(arcade.Window):
 
         arcade.set_background_color(arcade.color.AIR_SUPERIORITY_BLUE)
 
-        self.player_list = None
-        self.wall_list = None
+        # Scene object
+        self.scene = None
 
     def setup(self):
         """
         Setup game. Call for reset
         """
 
+        # Initialize scene
+        self.scene = arcade.Scene()
+
+        # Create sprite lists
+        self.scene.add_sprite_list("Player")
+        self.scene.add_sprite_list("Walls")
+
         # Create ground
-        self.wall_list = arcade.SpriteList(use_spatial_hash=True)
-        
         for x in range(21, SCREEN_WITH, 42):
             wall = arcade.Sprite("images/tile_0001.png", TILE_SCALING)
             wall.center_x = x
             wall.center_y = wall.height/2
-            self.wall_list.append(wall)
+            self.scene.add_sprite("Walls", wall)
 
         # More stuff on ground
-        # Coordinate y is 2.5 times the size og a tile
         coordinate_list = [[399, 63]]
 
         for coordinate in coordinate_list:
             wall = arcade.Sprite("images/tile_0071.png", TILE_SCALING)
             wall.position = coordinate
-            self.wall_list.append(wall)
+            self.scene.add_sprite("Walls", wall)
 
         # Setup player sprite
-        self.player_list = arcade.SpriteList()
         self.player_sprite = arcade.Sprite("images/tile_0019.png", CHARACTER_SCALING)
         self.player_sprite.center_x = SCREEN_WITH/2
         self.player_sprite.center_y = SCREEN_HEIGHT/2
-        self.player_list.append(self.player_sprite)
-
+        self.scene.add_sprite("Player", self.player_sprite)
     def on_draw(self):
         """
         Render the screen
         """
 
         self.clear()
-        self.player_list.draw()
-        self.wall_list.draw()
-
+        self.scene.draw()
+        
 def main():
     """
     Main function
