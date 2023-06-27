@@ -25,6 +25,9 @@ class MyGame(arcade.Window):
 
         arcade.set_background_color(arcade.color.AIR_SUPERIORITY_BLUE)
 
+        # Variable for map
+        self.tile_map = None
+
         # Scene object
         self.scene = None
 
@@ -48,35 +51,20 @@ class MyGame(arcade.Window):
         Setup game. Call for reset
         """
 
-        # Initialize scene
-        self.scene = arcade.Scene()
+        # Set up cameras
+        self.camera =  arcade.Camera(self.width, self.height)
+        self.gui_camera = arcade.Camera(self.width, self.height)
 
-        # Create sprite lists
-        self.scene.add_sprite_list("Player")
-        self.scene.add_sprite_list("Walls")
+        layer_options={
+            "Walls": {"use_spatial_hashing" : True}
+        }
 
-        # Create ground
-        for x in range(21, SCREEN_WIDTH, 42):
+        # Read in the tiled map
+        self.tile_map = arcade.load_tilemap("map01.tmx", TILE_SCALING, layer_options)
 
-            wall = arcade.Sprite("images/tile_0001.png", TILE_SCALING)
-            wall.center_x = x
-            wall.center_y = wall.height/2
-            self.scene.add_sprite("Walls", wall)
-
-        # More stuff on ground
-        coordinate_list = [[TILE_WIDTH*9.5, TILE_WIDTH*1.5]]
-
-        for coordinate in coordinate_list:
-            wall = arcade.Sprite("images/tile_0071.png", TILE_SCALING)
-            wall.position = coordinate
-            self.scene.add_sprite("Walls", wall)
-
-        # Coins
-        for x in range(0, SCREEN_WIDTH, 350):
-            coin = arcade.Sprite("images/tile_0179.png")
-            coin.center_x = x
-            coin.center_y = TILE_WIDTH*1.5
-            self.scene.add_sprite("Coins", coin)
+        # Initialize scene with tile_map, this will automatically add all
+        # layers from the map as SpriteLists to the scene
+        self.scene = arcade.Scene.from_tilemap(self.tile_map)
 
         # Keep track of collected coins
         self.collected_coins = 0
@@ -91,12 +79,6 @@ class MyGame(arcade.Window):
         self.physics_engine = arcade.PhysicsEnginePlatformer(
             self.player_sprite, gravity_constant=GRAVITY, walls=self.scene["Walls"]
         )
-
-        # Set up camera
-        self.camera =  arcade.Camera(self.width, self.height)
-
-        # Set up GUI camera
-        self.gui_camera = arcade.Camera(self.width, self.height)
 
     def center_camera_to_player(self):
         screen_center_x = self.player_sprite.center_x - (self.camera.viewport_width / 2)
@@ -125,6 +107,7 @@ class MyGame(arcade.Window):
         
         self.scene.draw()
         
+        # Activate gui camera before drawing gui elements
         self.gui_camera.use()
         
         # Draw score on screen, scrolling with viewport
