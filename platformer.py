@@ -16,6 +16,13 @@ GRAVITY = 1
 
 PLAYER_MOVEMENT_SPEED = 5
 PlAYER_JUMP_SPEED = 20
+PLAYER_START_X = SCREEN_WIDTH/2
+PLAYER_START_Y = SCREEN_HEIGHT/2 + 100
+
+# Layer names
+LAYER_NAME_PLATFORMS = "Walls"
+LAYER_NAME_COINS = "Coins"
+LAYER_NAME_DONT_TOUCH = "Don't touch"
 
 class MyGame(arcade.Window):
     def __init__(self):
@@ -71,8 +78,8 @@ class MyGame(arcade.Window):
 
         # Setup player sprite
         self.player_sprite = arcade.Sprite("images/tile_0019.png", CHARACTER_SCALING)
-        self.player_sprite.center_x = SCREEN_WIDTH/2
-        self.player_sprite.center_y = SCREEN_HEIGHT/2
+        self.player_sprite.center_x = PLAYER_START_X
+        self.player_sprite.center_y = PLAYER_START_Y
         self.scene.add_sprite("Player", self.player_sprite)
 
         # Create physics egnine
@@ -133,13 +140,23 @@ class MyGame(arcade.Window):
         self.center_camera_to_player()
 
         # Do we hit any coins?
-        coin_hit_list = arcade.check_for_collision_with_list(self.player_sprite, self.scene["Coins"])
+        coin_hit_list = arcade.check_for_collision_with_list(self.player_sprite, self.scene[LAYER_NAME_COINS])
 
         # Loop through coins we hit and remove it
         for coin in coin_hit_list:
             # Remove coin
             coin.remove_from_sprite_lists()
             self.collected_coins += 1
+
+        # Did player fall off map?
+        if self.player_sprite.center_y < -100:
+            self.player_sprite.center_x = PLAYER_START_X
+            self.player_sprite.center_y = PLAYER_START_Y
+
+        # Did player touch something they shouldn't?
+        if arcade.check_for_collision_with_list(self.player_sprite, self.scene[LAYER_NAME_DONT_TOUCH]):
+            self.player_sprite.center_x = PLAYER_START_X
+            self.player_sprite.center_y = PLAYER_START_Y
 
     def on_key_press(self, key, modifiers):
         """
