@@ -20,6 +20,10 @@ PLAYER_MOVEMENT_SPEED = 5
 PlAYER_JUMP_SPEED = 20
 PLAYER_START_X = SCREEN_WIDTH/2
 PLAYER_START_Y = SCREEN_HEIGHT/2 + 100
+PLAYER_GRAPHIC =  {
+    "god": arcade.load_texture("images/tile_0019.png"),
+    "ond": arcade.load_texture("images/tile_0109.png")
+}
 
 # Layer names
 LAYER_NAME_PLATFORMS = "Walls"
@@ -159,6 +163,12 @@ class MyGame(arcade.Window):
         if arcade.check_for_collision_with_list(self.player_sprite, self.scene[LAYER_NAME_DONT_TOUCH]):
             self.player_sprite.center_x = PLAYER_START_X
             self.player_sprite.center_y = PLAYER_START_Y
+
+        # What side of screen is player on?
+        if self.player_sprite.center_x > SCREEN_WIDTH/2:
+            self.player_sprite.texture = PLAYER_GRAPHIC["ond"]
+        else:
+            self.player_sprite.texture = PLAYER_GRAPHIC["god"]
 
     def on_key_press(self, key, modifiers):
         """
