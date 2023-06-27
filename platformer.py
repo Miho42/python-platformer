@@ -101,7 +101,15 @@ class MyGame(arcade.Window):
         
         self.camera.move_to(player_centered, camera_scroll_speed)
 
+    def player_change_mode(self):
+        cam_x, _ = self.camera.position
 
+        # minus PLAYER_START_X to set player and camera to the same "start point"
+        if ((self.player_sprite.center_x - PLAYER_START_X) - cam_x) > 0:
+            self.player_sprite.texture = PLAYER_GRAPHIC["ond"]
+        else:
+            self.player_sprite.texture = PLAYER_GRAPHIC["god"]
+            
     def on_draw(self):
         """
         Render the screen
@@ -163,13 +171,10 @@ class MyGame(arcade.Window):
         if arcade.check_for_collision_with_list(self.player_sprite, self.scene[LAYER_NAME_DONT_TOUCH]):
             self.player_sprite.center_x = PLAYER_START_X
             self.player_sprite.center_y = PLAYER_START_Y
-
-        # What side of screen is player on?
-        if self.player_sprite.center_x > SCREEN_WIDTH/2:
-            self.player_sprite.texture = PLAYER_GRAPHIC["ond"]
-        else:
-            self.player_sprite.texture = PLAYER_GRAPHIC["god"]
-
+        
+        # Should player change their mode?
+        self.player_change_mode()
+            
     def on_key_press(self, key, modifiers):
         """
         Called whenever a key is pressed
