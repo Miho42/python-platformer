@@ -134,6 +134,15 @@ class MyGame(arcade.Window):
             arcade.csscolor.WHITE,
             18,
         )
+
+        # Draw rectangle to show the different sides
+        arcade.draw_rectangle_filled(
+            SCREEN_WIDTH/4,
+            SCREEN_HEIGHT/2,
+            SCREEN_WIDTH/2,
+            SCREEN_HEIGHT,
+            arcade.color.BLACK,
+        )
         
 
     def on_update(self, delta_time):
