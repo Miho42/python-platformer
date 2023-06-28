@@ -18,7 +18,8 @@ TILE_WIDTH = 42
 GRAVITY = 1
 
 PLAYER_MOVEMENT_SPEED = 5
-PlAYER_JUMP_SPEED = 20
+PlAYER_JUMP_SPEED_BAD = 20
+PlAYER_JUMP_SPEED_GOOD = 10
 PLAYER_START_X = SCREEN_WIDTH/2
 PLAYER_START_Y = SCREEN_HEIGHT/2 + 100
 PLAYER_GRAPHIC =  {
@@ -83,8 +84,17 @@ class MyGame(arcade.Window):
         # Keep track of collected coins
         self.collected_coins = 0
 
+        # Square for seperating screen
+        self.dark_side = arcade.Sprite(
+            center_y=SCREEN_HEIGHT/2,
+            texture=arcade.make_soft_square_texture(SCREEN_HEIGHT, arcade.color.BLACK, 255, 255)
+        )
+        self.dark_side.alpha = 128
+        self.dark_side.left = SCREEN_WIDTH/2
+
         # Setup player sprite
         self.player_sprite = arcade.Sprite("images/tile_0019.png", CHARACTER_SCALING)
+        self.player_good = True
         self.player_sprite.center_x = PLAYER_START_X
         self.player_sprite.center_y = PLAYER_START_Y
         self.scene.add_sprite("Player", self.player_sprite)
@@ -107,10 +117,15 @@ class MyGame(arcade.Window):
 
         # minus PLAYER_START_X to set player and camera to the same "start point"
         if ((self.player_sprite.center_x - PLAYER_START_X) - cam_x) > 0:
-            self.player_sprite.texture = PLAYER_GRAPHIC["ond"]
+            self.player_good = False
         else:
+            self.player_good = True
+
+        if self.player_good == True:
             self.player_sprite.texture = PLAYER_GRAPHIC["god"]
-            
+        else:
+            self.player_sprite.texture = PLAYER_GRAPHIC["ond"]
+
     def on_draw(self):
         """
         Render the screen
@@ -136,14 +151,7 @@ class MyGame(arcade.Window):
         )
 
         # Draw line to seperate the two sides
-        arcade.draw_line(
-            SCREEN_WIDTH/2,
-            SCREEN_HEIGHT,
-            SCREEN_WIDTH/2,
-            0,
-            arcade.color.BLACK,
-            5
-        )
+        self.dark_side.draw()
         
 
     def on_update(self, delta_time):
@@ -186,7 +194,9 @@ class MyGame(arcade.Window):
         """
         if key == arcade.key.UP or key == arcade.key.W:
             if self.physics_engine.can_jump():
-                self.player_sprite.change_y = PlAYER_JUMP_SPEED
+                if self.player_good == True:
+                    self.player_sprite.change_y = PlAYER_JUMP_SPEED_GOOD
+                else: self.player_sprite.change_y = PlAYER_JUMP_SPEED_BAD
         elif key == arcade.key.LEFT or key == arcade.key.A:
             self.player_sprite.change_x = -PLAYER_MOVEMENT_SPEED
         elif key == arcade.key.RIGHT or key == arcade.key.D:
