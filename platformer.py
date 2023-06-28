@@ -19,9 +19,9 @@ GRAVITY = 1
 
 PLAYER_MOVEMENT_SPEED = 5
 PlAYER_JUMP_SPEED_BAD = 20
-PlAYER_JUMP_SPEED_GOOD = 10
+PlAYER_JUMP_SPEED_GOOD = 12
 PLAYER_START_X = SCREEN_WIDTH/2
-PLAYER_START_Y = SCREEN_HEIGHT/2 + 100
+PLAYER_START_Y = SCREEN_HEIGHT/2 + 500
 PLAYER_GRAPHIC =  {
     "god": arcade.load_texture("images/tile_0019.png"),
     "ond": arcade.load_texture("images/tile_0109.png")
