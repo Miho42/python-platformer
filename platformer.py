@@ -135,13 +135,14 @@ class MyGame(arcade.Window):
             18,
         )
 
-        # Draw rectangle to show the different sides
-        arcade.draw_rectangle_filled(
-            SCREEN_WIDTH/4,
-            SCREEN_HEIGHT/2,
+        # Draw line to seperate the two sides
+        arcade.draw_line(
             SCREEN_WIDTH/2,
             SCREEN_HEIGHT,
+            SCREEN_WIDTH/2,
+            0,
             arcade.color.BLACK,
+            5
         )
         
 
