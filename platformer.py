@@ -7,6 +7,9 @@ SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 650
 SCREEN_TITLE = "Platformer"
 
+CAMERA_OFFSET = 100
+CAMERA_SCROLL_SPEED = 0.01
+
 CHARACTER_SCALING = 2
 TILE_SCALING = 2
 
@@ -18,6 +21,10 @@ PLAYER_MOVEMENT_SPEED = 5
 PlAYER_JUMP_SPEED = 20
 PLAYER_START_X = SCREEN_WIDTH/2
 PLAYER_START_Y = SCREEN_HEIGHT/2 + 100
+PLAYER_GRAPHIC =  {
+    "god": arcade.load_texture("images/tile_0019.png"),
+    "ond": arcade.load_texture("images/tile_0109.png")
+}
 
 # Layer names
 LAYER_NAME_PLATFORMS = "Walls"
@@ -87,22 +94,23 @@ class MyGame(arcade.Window):
             self.player_sprite, gravity_constant=GRAVITY, walls=self.scene["Walls"]
         )
 
-    def center_camera_to_player(self):
+    def center_camera_to_player(self, camera_scroll_speed=CAMERA_SCROLL_SPEED):
         screen_center_x = self.player_sprite.center_x - (self.camera.viewport_width / 2)
         screen_center_y = self.player_sprite.center_y - (self.camera.viewport_height / 2)
 
-        """
-        # Don't let camera travel past 0
-        if screen_center_x < 0:
-            screen_center_x = 0
-        """
-        if screen_center_y < 0:
-            screen_center_y = 0
-        
         player_centered = screen_center_x, screen_center_y
         
-        self.camera.move_to(player_centered)
+        self.camera.move_to(player_centered, camera_scroll_speed)
 
+    def player_change_mode(self):
+        cam_x, _ = self.camera.position
+
+        # minus PLAYER_START_X to set player and camera to the same "start point"
+        if ((self.player_sprite.center_x - PLAYER_START_X) - cam_x) > 0:
+            self.player_sprite.texture = PLAYER_GRAPHIC["ond"]
+        else:
+            self.player_sprite.texture = PLAYER_GRAPHIC["god"]
+            
     def on_draw(self):
         """
         Render the screen
@@ -125,6 +133,16 @@ class MyGame(arcade.Window):
             10,
             arcade.csscolor.WHITE,
             18,
+        )
+
+        # Draw line to seperate the two sides
+        arcade.draw_line(
+            SCREEN_WIDTH/2,
+            SCREEN_HEIGHT,
+            SCREEN_WIDTH/2,
+            0,
+            arcade.color.BLACK,
+            5
         )
         
 
@@ -149,15 +167,19 @@ class MyGame(arcade.Window):
             self.collected_coins += 1
 
         # Did player fall off map?
-        if self.player_sprite.center_y < -100:
+        if self.player_sprite.center_y < -SCREEN_HEIGHT:
             self.player_sprite.center_x = PLAYER_START_X
             self.player_sprite.center_y = PLAYER_START_Y
+            self.center_camera_to_player(0.1)
 
         # Did player touch something they shouldn't?
         if arcade.check_for_collision_with_list(self.player_sprite, self.scene[LAYER_NAME_DONT_TOUCH]):
             self.player_sprite.center_x = PLAYER_START_X
             self.player_sprite.center_y = PLAYER_START_Y
-
+        
+        # Should player change their mode?
+        self.player_change_mode()
+            
     def on_key_press(self, key, modifiers):
         """
         Called whenever a key is pressed
