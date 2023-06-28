@@ -61,6 +61,9 @@ class MyGame(arcade.Window):
         # Variable counting number of collected coins
         self.collected_coins = 0
 
+        # List for emitters
+        self.emitter_list = []
+
     def setup(self):
         """
         Setup game. Call for reset
@@ -126,6 +129,18 @@ class MyGame(arcade.Window):
         else:
             self.player_sprite.texture = PLAYER_GRAPHIC["ond"]
 
+    def collected_coin_emitter(self, pos_x, pos_y):
+        new_emitter = arcade.make_burst_emitter(
+        center_xy=[pos_x, pos_y],
+        filenames_and_textures=["images/tile_0078.png"],
+        particle_count=10,
+        particle_speed=2,
+        particle_lifetime_min=0.5,
+        particle_lifetime_max=1,
+        particle_scale=2
+        )
+        return new_emitter
+
     def on_draw(self):
         """
         Render the screen
@@ -136,6 +151,9 @@ class MyGame(arcade.Window):
         self.camera.use()
         
         self.scene.draw()
+
+        for e in self.emitter_list:
+            e.draw()
         
         # Activate gui camera before drawing gui elements
         self.gui_camera.use()
@@ -151,8 +169,7 @@ class MyGame(arcade.Window):
         )
 
         # Draw line to seperate the two sides
-        self.dark_side.draw()
-        
+        self.dark_side.draw()      
 
     def on_update(self, delta_time):
         """
@@ -171,6 +188,7 @@ class MyGame(arcade.Window):
         # Loop through coins we hit and remove it
         for coin in coin_hit_list:
             # Remove coin
+            self.emitter_list.append(self.collected_coin_emitter(coin.center_x, coin.center_y))
             coin.remove_from_sprite_lists()
             self.collected_coins += 1
 
@@ -187,6 +205,10 @@ class MyGame(arcade.Window):
         
         # Should player change their mode?
         self.player_change_mode()
+
+        # Update emitters
+        for e in self.emitter_list:
+            e.update()
             
     def on_key_press(self, key, modifiers):
         """
