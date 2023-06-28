@@ -84,6 +84,14 @@ class MyGame(arcade.Window):
         # Keep track of collected coins
         self.collected_coins = 0
 
+        # Square for seperating screen
+        self.dark_side = arcade.Sprite(
+            center_y=SCREEN_HEIGHT/2,
+            texture=arcade.make_soft_square_texture(SCREEN_HEIGHT, arcade.color.BLACK, 255, 255)
+        )
+        self.dark_side.alpha = 128
+        self.dark_side.left = SCREEN_WIDTH/2
+
         # Setup player sprite
         self.player_sprite = arcade.Sprite("images/tile_0019.png", CHARACTER_SCALING)
         self.player_good = True
@@ -143,14 +151,7 @@ class MyGame(arcade.Window):
         )
 
         # Draw line to seperate the two sides
-        arcade.draw_line(
-            SCREEN_WIDTH/2,
-            SCREEN_HEIGHT,
-            SCREEN_WIDTH/2,
-            0,
-            arcade.color.BLACK,
-            5,
-        )
+        self.dark_side.draw()
         
 
     def on_update(self, delta_time):
