@@ -8,6 +8,7 @@ SCREEN_HEIGHT = 650
 SCREEN_TITLE = "Platformer"
 
 CAMERA_OFFSET = 100
+CAMERA_SCROLL_SPEED = 0.01
 
 CHARACTER_SCALING = 2
 TILE_SCALING = 2
@@ -93,7 +94,7 @@ class MyGame(arcade.Window):
             self.player_sprite, gravity_constant=GRAVITY, walls=self.scene["Walls"]
         )
 
-    def center_camera_to_player(self, camera_scroll_speed):
+    def center_camera_to_player(self, camera_scroll_speed=CAMERA_SCROLL_SPEED):
         screen_center_x = self.player_sprite.center_x - (self.camera.viewport_width / 2)
         screen_center_y = self.player_sprite.center_y - (self.camera.viewport_height / 2)
 
@@ -144,13 +145,7 @@ class MyGame(arcade.Window):
         self.physics_engine.update()
 
         # Position the camera
-        dist_to_center_camera_x = abs(self.player_sprite.center_x - self.camera.viewport_width/2)
-        dist_to_center_camera_y = abs(self.player_sprite.center_y - self.camera.viewport_height/2)
-        
-        if dist_to_center_camera_x > CAMERA_OFFSET or dist_to_center_camera_y > CAMERA_OFFSET:
-            camera_scroll_speed = 0.01
-
-            self.center_camera_to_player(camera_scroll_speed)
+        self.center_camera_to_player()
 
         # Do we hit any coins?
         coin_hit_list = arcade.check_for_collision_with_list(self.player_sprite, self.scene[LAYER_NAME_COINS])
@@ -165,7 +160,7 @@ class MyGame(arcade.Window):
         if self.player_sprite.center_y < -SCREEN_HEIGHT:
             self.player_sprite.center_x = PLAYER_START_X
             self.player_sprite.center_y = PLAYER_START_Y
-            self.center_camera_to_player(0.05)
+            self.center_camera_to_player(0.1)
 
         # Did player touch something they shouldn't?
         if arcade.check_for_collision_with_list(self.player_sprite, self.scene[LAYER_NAME_DONT_TOUCH]):
