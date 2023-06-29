@@ -7,7 +7,7 @@ SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 650
 SCREEN_TITLE = "Platformer"
 
-CAMERA_OFFSET = 100
+CAMERA_OFFSET = 21
 CAMERA_SCROLL_SPEED = 0.01
 
 CHARACTER_SCALING = 2
@@ -114,10 +114,13 @@ class MyGame(arcade.Window):
         screen_center_x = self.player_sprite.center_x - (self.camera.viewport_width / 2)
         screen_center_y = self.player_sprite.center_y - (self.camera.viewport_height / 2)
 
-        player_centered = screen_center_x, screen_center_y
-        
-        self.camera.move_to(player_centered, camera_scroll_speed)
+        player_cam_dist = abs(self.player_sprite.center_x - (self.camera.position[0] + (self.camera.viewport_width/2)))
+        if player_cam_dist > CAMERA_OFFSET:
 
+            self.camera.move_to((screen_center_x, screen_center_y), camera_scroll_speed)
+        else: self.camera.move_to((self.camera.position[0], screen_center_y), camera_scroll_speed)
+        
+            
     def player_change_mode(self):
         """
         If needed changes player_good and runs get_player_change_mode_emitter()
