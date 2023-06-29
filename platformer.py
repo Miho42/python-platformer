@@ -20,8 +20,6 @@ GRAVITY = 1
 PLAYER_MOVEMENT_SPEED = 5
 PlAYER_JUMP_SPEED_BAD = 20
 PlAYER_JUMP_SPEED_GOOD = 12
-PLAYER_START_X = SCREEN_WIDTH/2
-PLAYER_START_Y = SCREEN_HEIGHT/2 + 500
 PLAYER_GRAPHIC =  {
     "god": arcade.load_texture("images/tile_0019.png"),
     "ond": arcade.load_texture("images/tile_0109.png")
@@ -31,6 +29,8 @@ PLAYER_GRAPHIC =  {
 LAYER_NAME_PLATFORMS = "Walls"
 LAYER_NAME_COINS = "Coins"
 LAYER_NAME_DONT_TOUCH = "Don't touch"
+LAYER_NAME_SAVE_POINTS = "Savepoints"
+LAYER_NAME_START_POINT = "Startpoint"
 
 class MyGame(arcade.Window):
     def __init__(self):
@@ -69,10 +69,6 @@ class MyGame(arcade.Window):
         Setup game. Call for reset
         """
 
-        # Set up cameras
-        self.camera =  arcade.Camera(self.width, self.height)
-        self.gui_camera = arcade.Camera(self.width, self.height)
-
         layer_options={
             "Walls": {"use_spatial_hashing" : True}
         }
@@ -83,6 +79,10 @@ class MyGame(arcade.Window):
         # Initialize scene with tile_map, this will automatically add all
         # layers from the map as SpriteLists to the scene
         self.scene = arcade.Scene.from_tilemap(self.tile_map)
+
+        # Set up cameras
+        self.camera =  arcade.Camera(self.width, self.height)
+        self.gui_camera = arcade.Camera(self.width, self.height)
 
         # Keep track of collected coins
         self.collected_coins = 0
@@ -98,8 +98,8 @@ class MyGame(arcade.Window):
         # Setup player sprite
         self.player_sprite = arcade.Sprite("images/tile_0019.png", CHARACTER_SCALING)
         self.player_good = True
-        self.player_sprite.center_x = PLAYER_START_X
-        self.player_sprite.center_y = PLAYER_START_Y
+        self.spawn_point = self.scene[LAYER_NAME_START_POINT][0]
+        self.player_sprite.position = self.spawn_point.position
         self.scene.add_sprite("Player", self.player_sprite)
 
         # Create physics egnine
@@ -126,7 +126,7 @@ class MyGame(arcade.Window):
         cam_x, _ = self.camera.position
 
         # minus PLAYER_START_X to set player and camera to the same "start point"
-        if ((self.player_sprite.center_x - PLAYER_START_X) - cam_x) > 0:
+        if ((self.player_sprite.center_x - self.camera.viewport_width/2) - cam_x) > 0:
             if self.player_good == True:
                 self.player_good = False
                 self.emitter_list.append(self.get_player_change_mode_emitter())
@@ -189,6 +189,34 @@ class MyGame(arcade.Window):
         # Draw line to seperate the two sides
         self.dark_side.draw()      
 
+    def camera_go_to_tile(self, tile_x, tile_y):
+        tw = self.tile_map.tile_width*TILE_SCALING
+        th = self.tile_map.tile_height*TILE_SCALING
+        x = tw*tile_x - self.camera.viewport_width/2 - tw/2 
+        y = th*tile_y - self.camera.viewport_height/2 - th/2
+
+        self.camera.move_to((x, y))
+
+    def tile_to_screen(self, tile_x, tile_y):
+        """
+        Takes a tile coordinate and returns a screen coordinate
+        """
+        tw = self.tile_map.tile_width * TILE_SCALING
+        th = self.tile_map.tile_height * TILE_SCALING
+        screen_x = tw*tile_x - self.camera.viewport_width/2 - tw/2
+        screen_y = th*tile_y - self.camera.viewport_height/2 - th/2
+
+        return screen_x, screen_y
+
+    def screen_to_tile(self, screen_x, screen_y):
+        """
+        Takes a screen coordinate and returns a tile coordinate
+        """
+        tile_x = screen_x/(self.tile_map.tile_width*TILE_SCALING)
+        tile_y = screen_y/(self.tile_map.tile_height*TILE_SCALING)
+
+        return round(tile_x), round(tile_y)
+
     def on_update(self, delta_time):
         """
         Movement and game logic
@@ -196,7 +224,7 @@ class MyGame(arcade.Window):
 
         # Move the player with the physics engine
         self.physics_engine.update()
-
+        
         # Position the camera
         self.center_camera_to_player()
 
@@ -212,14 +240,16 @@ class MyGame(arcade.Window):
 
         # Did player fall off map?
         if self.player_sprite.center_y < -SCREEN_HEIGHT:
-            self.player_sprite.center_x = PLAYER_START_X
-            self.player_sprite.center_y = PLAYER_START_Y
+            self.player_sprite.position = self.spawn_point.position
             self.center_camera_to_player(0.1)
 
         # Did player touch something they shouldn't?
         if arcade.check_for_collision_with_list(self.player_sprite, self.scene[LAYER_NAME_DONT_TOUCH]):
-            self.player_sprite.center_x = PLAYER_START_X
-            self.player_sprite.center_y = PLAYER_START_Y
+            self.player_sprite.position = self.spawn_point.position
+
+        # Did player touch spawn point?
+        for sp in arcade.check_for_collision_with_list(self.player_sprite, self.scene[LAYER_NAME_SAVE_POINTS]):
+            self.spawn_point = sp
         
         # Should player change their mode?
         self.player_change_mode()
