@@ -69,6 +69,9 @@ class MyGame(arcade.Window):
         Setup game. Call for reset
         """
 
+        self.right_pressed = False
+        self.left_pressed = False
+
         layer_options={
             "Walls": {"use_spatial_hashing" : True}
         }
@@ -284,7 +287,18 @@ class MyGame(arcade.Window):
         # Update emitters
         for e in self.emitter_list:
             e.update()
-            
+
+
+    def keyboard_control(self):
+            # Process left/right
+        if self.right_pressed and not self.left_pressed:
+            self.player_sprite.change_x = PLAYER_MOVEMENT_SPEED
+        elif self.left_pressed and not self.right_pressed:
+            self.player_sprite.change_x = -PLAYER_MOVEMENT_SPEED
+        else:
+            self.player_sprite.change_x = 0
+
+
     def on_key_press(self, key, modifiers):
         """
         Called whenever a key is pressed
@@ -295,19 +309,23 @@ class MyGame(arcade.Window):
                     self.player_sprite.change_y = PlAYER_JUMP_SPEED_GOOD
                 else: self.player_sprite.change_y = PlAYER_JUMP_SPEED_BAD
         elif key == arcade.key.LEFT or key == arcade.key.A:
-            self.player_sprite.change_x = -PLAYER_MOVEMENT_SPEED
+            self.left_pressed = True
         elif key == arcade.key.RIGHT or key == arcade.key.D:
-            self.player_sprite.change_x = PLAYER_MOVEMENT_SPEED
-        
+            self.right_pressed = True
+
+        self.keyboard_control()
+
     def on_key_release(self, key, modifiers):
         """
         Called whenever a key is released
         """
 
         if key == arcade.key.LEFT or key == arcade.key.A:
-            self.player_sprite.change_x = 0
+            self.left_pressed = False
         elif key == arcade.key.RIGHT or key == arcade.key.D:
-            self.player_sprite.change_x = 0
+            self.right_pressed = False
+
+        self.keyboard_control()
 
 def main():
     """
