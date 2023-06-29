@@ -61,6 +61,9 @@ class MyGame(arcade.Window):
         # Variable counting number of collected coins
         self.collected_coins = 0
 
+        # List for emitters
+        self.emitter_list = []
+
     def setup(self):
         """
         Setup game. Call for reset
@@ -105,6 +108,9 @@ class MyGame(arcade.Window):
         )
 
     def center_camera_to_player(self, camera_scroll_speed=CAMERA_SCROLL_SPEED):
+        """
+        Moves camera to player
+        """
         screen_center_x = self.player_sprite.center_x - (self.camera.viewport_width / 2)
         screen_center_y = self.player_sprite.center_y - (self.camera.viewport_height / 2)
 
@@ -113,18 +119,45 @@ class MyGame(arcade.Window):
         self.camera.move_to(player_centered, camera_scroll_speed)
 
     def player_change_mode(self):
+        """
+        If needed changes player_good and runs get_player_change_mode_emitter()
+        """
+
         cam_x, _ = self.camera.position
 
         # minus PLAYER_START_X to set player and camera to the same "start point"
         if ((self.player_sprite.center_x - PLAYER_START_X) - cam_x) > 0:
-            self.player_good = False
-        else:
+            if self.player_good == True:
+                self.player_good = False
+                self.emitter_list.append(self.get_player_change_mode_emitter())
+        elif self.player_good == False:
             self.player_good = True
+            self.emitter_list.append(self.get_player_change_mode_emitter())
 
-        if self.player_good == True:
-            self.player_sprite.texture = PLAYER_GRAPHIC["god"]
-        else:
-            self.player_sprite.texture = PLAYER_GRAPHIC["ond"]
+    def get_collected_coin_emitter(self, pos_x, pos_y):
+        new_emitter = arcade.make_burst_emitter(
+        center_xy=[pos_x, pos_y],
+        filenames_and_textures=["images/tile_0078.png"],
+        particle_count=10,
+        particle_speed=2,
+        particle_lifetime_min=0.5,
+        particle_lifetime_max=1,
+        particle_scale=2
+        )
+        return new_emitter
+
+    def get_player_change_mode_emitter(self):
+        new_emitter = arcade.make_burst_emitter(
+            center_xy=self.player_sprite.position,
+            filenames_and_textures=["images/tile_0596.png"],
+            particle_count=50,
+            particle_speed=0.7,
+            particle_lifetime_min=0.1,
+            particle_lifetime_max=1,
+            particle_scale=2
+        )
+
+        return new_emitter
 
     def on_draw(self):
         """
@@ -136,6 +169,9 @@ class MyGame(arcade.Window):
         self.camera.use()
         
         self.scene.draw()
+
+        for e in self.emitter_list:
+            e.draw()
         
         # Activate gui camera before drawing gui elements
         self.gui_camera.use()
@@ -151,8 +187,7 @@ class MyGame(arcade.Window):
         )
 
         # Draw line to seperate the two sides
-        self.dark_side.draw()
-        
+        self.dark_side.draw()      
 
     def on_update(self, delta_time):
         """
@@ -171,6 +206,7 @@ class MyGame(arcade.Window):
         # Loop through coins we hit and remove it
         for coin in coin_hit_list:
             # Remove coin
+            self.emitter_list.append(self.get_collected_coin_emitter(coin.center_x, coin.center_y))
             coin.remove_from_sprite_lists()
             self.collected_coins += 1
 
@@ -187,6 +223,14 @@ class MyGame(arcade.Window):
         
         # Should player change their mode?
         self.player_change_mode()
+        if self.player_good == True:
+            self.player_sprite.texture = PLAYER_GRAPHIC["god"]
+        else:
+            self.player_sprite.texture = PLAYER_GRAPHIC["ond"]
+
+        # Update emitters
+        for e in self.emitter_list:
+            e.update()
             
     def on_key_press(self, key, modifiers):
         """
