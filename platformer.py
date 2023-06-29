@@ -7,7 +7,7 @@ SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 650
 SCREEN_TITLE = "Platformer"
 
-CAMERA_OFFSET = 21
+CAMERA_OFFSET = 50
 CAMERA_SCROLL_SPEED = 0.01
 
 CHARACTER_SCALING = 2
@@ -107,6 +107,10 @@ class MyGame(arcade.Window):
             self.player_sprite, gravity_constant=GRAVITY, walls=self.scene["Walls"]
         )
 
+        # No save points has been touched
+        for sp in self.scene[LAYER_NAME_SAVE_POINTS]:
+            sp.taken = False
+
     def center_camera_to_player(self, camera_scroll_speed=CAMERA_SCROLL_SPEED):
         """
         Moves camera to player
@@ -119,8 +123,7 @@ class MyGame(arcade.Window):
 
             self.camera.move_to((screen_center_x, screen_center_y), camera_scroll_speed)
         else: self.camera.move_to((self.camera.position[0], screen_center_y), camera_scroll_speed)
-        
-            
+                 
     def player_change_mode(self):
         """
         If needed changes player_good and runs get_player_change_mode_emitter()
@@ -157,6 +160,19 @@ class MyGame(arcade.Window):
             particle_speed=0.7,
             particle_lifetime_min=0.1,
             particle_lifetime_max=1,
+            particle_scale=2
+        )
+
+        return new_emitter
+    
+    def get_new_spawn_point_emitter(self, pos):
+        new_emitter = arcade.make_burst_emitter(
+            center_xy=pos,
+            filenames_and_textures=["images/tile_0896.png"],
+            particle_count=10,
+            particle_speed=1,
+            particle_lifetime_min=0.5,
+            particle_lifetime_max=2,
             particle_scale=2
         )
 
@@ -253,6 +269,10 @@ class MyGame(arcade.Window):
         # Did player touch spawn point?
         for sp in arcade.check_for_collision_with_list(self.player_sprite, self.scene[LAYER_NAME_SAVE_POINTS]):
             self.spawn_point = sp
+            if sp.taken == False:
+                sp.taken =True
+                self.emitter_list.append(self.get_new_spawn_point_emitter(sp.position))
+                
         
         # Should player change their mode?
         self.player_change_mode()
