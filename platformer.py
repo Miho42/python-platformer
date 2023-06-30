@@ -81,7 +81,9 @@ class MyGame(arcade.Window):
         }
 
         # Read in the tiled map
-        self.tile_map = arcade.load_tilemap(f"map0{self.level}.tmx", TILE_SCALING, layer_options)
+        #self.tile_map = arcade.load_tilemap(f"map0{self.level}.tmx", TILE_SCALING, layer_options)
+
+        self.tile_map = arcade.load_tilemap(f"map02.tmx", TILE_SCALING, layer_options)
 
         # Initialize scene with tile_map, this will automatically add all
         # layers from the map as SpriteLists to the scene
@@ -295,8 +297,8 @@ class MyGame(arcade.Window):
                     number_of_taken_flags += 1
 
             if number_of_taken_flags == len(self.scene[LAYER_NAME_SAVE_POINTS]):
-                score = round(self.collected_coins/self.timer)
-                print(f"level {self.level} score: {score}")
+                score = (self.collected_coins/self.timer) * 100
+                print(f"level {self.level} score: {round(score)}")
                 self.level += 1
                 self.setup()
 
