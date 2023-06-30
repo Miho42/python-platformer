@@ -15,15 +15,30 @@ TILE_SCALING = 2
 
 TILE_WIDTH = 42
 
-GRAVITY = 1
+GRAVITY = 0.5
 
 PLAYER_MOVEMENT_SPEED = 5
-PlAYER_JUMP_SPEED_BAD = 20
-PlAYER_JUMP_SPEED_GOOD = 12
+PlAYER_JUMP_SPEED_BAD = 13
+PlAYER_JUMP_SPEED_GOOD = 9
 PLAYER_GRAPHIC =  {
-    "god": arcade.load_texture("images/tile_0019.png"),
-    "ond": arcade.load_texture("images/tile_0109.png")
+    "god_idle": arcade.load_texture("images/tile_0019.png"),
+    "god_jump_right": arcade.load_texture("images/tile_0026.png"),
+    "god_jump_left": arcade.load_texture("images/tile_0026.png", flipped_horizontally=1),
+    "god_fall_right": arcade.load_texture("images/tile_0023.png"),
+    "god_fall_left": arcade.load_texture("images/tile_0023.png", flipped_horizontally=1),
+    "god_land_right": arcade.load_texture("images/tile_0022.png"),
+    "god_land_left": arcade.load_texture("images/tile_0022.png", flipped_horizontally=1),
+    "ond_idle": arcade.load_texture("images/tile_0109.png"),
+    "ond_jump_right": arcade.load_texture("images/tile_0116.png"),
+    "ond_jump_left": arcade.load_texture("images/tile_0116.png", flipped_horizontally=1),
+    "ond_fall_right": arcade.load_texture("images/tile_0113.png"),
+    "ond_fall_left": arcade.load_texture("images/tile_0113.png", flipped_horizontally=1),
+    "ond_land_right": arcade.load_texture("images/tile_0112.png"),
+    "ond_land_left": arcade.load_texture("images/tile_0112.png", flipped_horizontally=1),
 }
+
+RIGHT_FACING = "right"
+LEFT_FACING = "left"
 
 # Layer names
 LAYER_NAME_PLATFORMS = "Walls"
@@ -31,6 +46,48 @@ LAYER_NAME_COINS = "Coins"
 LAYER_NAME_DONT_TOUCH = "Don't touch"
 LAYER_NAME_SAVE_POINTS = "Savepoints"
 LAYER_NAME_START_POINT = "Startpoint"
+
+class Player(arcade.Sprite):
+    """
+    Class for the player
+    """
+
+    def __init__(self):
+        super().__init__()
+
+        # Direction
+        self.character_face_direction = RIGHT_FACING
+
+        # Track jumping
+        self.is_jumping = False
+                          
+    def update_animation(self, mode, delta_time: float = 1 / 60):
+
+        # Facing left or right?
+        if self.change_x > 0 and self.character_face_direction == LEFT_FACING:
+            self.character_face_direction = RIGHT_FACING
+        if self.change_x < 0 and self.character_face_direction == RIGHT_FACING:
+            self.character_face_direction = LEFT_FACING
+
+        # Jumping animation
+        if self.change_y > 0:
+            self.texture = PLAYER_GRAPHIC[f"{mode}_jump_{self.character_face_direction}"]
+            self.is_jumping = True
+            return
+        if self.change_y < 0:
+            self.texture = PLAYER_GRAPHIC[f"{mode}_fall_{self.character_face_direction}"]
+            self.is_jumping = True
+            return
+        
+        if self.change_y == 0 and self.is_jumping == True:
+            self.texture = PLAYER_GRAPHIC[f"{mode}_land_{self.character_face_direction}"]
+            self.is_jumping = False
+            return
+        
+        # Player walk/idle
+        if self.change_x:
+            self.texture = PLAYER_GRAPHIC[f"{mode}_idle"]
+            return
 
 class MyGame(arcade.Window):
     def __init__(self):
@@ -100,8 +157,11 @@ class MyGame(arcade.Window):
         self.dark_side.left = SCREEN_WIDTH/2
 
         # Setup player sprite
-        self.player_sprite = arcade.Sprite("images/tile_0019.png", CHARACTER_SCALING)
-        self.player_good = True
+        #self.player_sprite = arcade.Sprite("images/tile_0019.png", CHARACTER_SCALING)
+        self.player_sprite = Player()
+        self.player_sprite.texture = PLAYER_GRAPHIC["god_idle"]
+        self.player_mode = "god"
+        self.player_sprite.scale = TILE_SCALING
         self.spawn_point = self.scene[LAYER_NAME_START_POINT][0]
         self.player_sprite.position = self.spawn_point.position
         self.scene.add_sprite("Player", self.player_sprite)
@@ -146,11 +206,11 @@ class MyGame(arcade.Window):
 
         # minus PLAYER_START_X to set player and camera to the same "start point"
         if ((self.player_sprite.center_x - self.camera.viewport_width/2) - cam_x) > 0:
-            if self.player_good == True:
-                self.player_good = False
+            if self.player_mode == "god":
+                self.player_mode = "ond"
                 self.emitter_list.append(self.get_player_change_mode_emitter())
-        elif self.player_good == False:
-            self.player_good = True
+        elif self.player_mode == "ond":
+            self.player_mode = "god"
             self.emitter_list.append(self.get_player_change_mode_emitter())
 
     def get_collected_coin_emitter(self, pos_x, pos_y):
@@ -303,10 +363,13 @@ class MyGame(arcade.Window):
         
         # Should player change their mode?
         self.player_change_mode()
-        if self.player_good == True:
-            self.player_sprite.texture = PLAYER_GRAPHIC["god"]
+        if self.player_mode == "god":
+            self.player_sprite.texture = PLAYER_GRAPHIC["god_idle"]
         else:
-            self.player_sprite.texture = PLAYER_GRAPHIC["ond"]
+            self.player_sprite.texture = PLAYER_GRAPHIC["ond_idle"]
+
+        # Update player animation
+        self.player_sprite.update_animation(self.player_mode)
 
         # Update emitters
         for e in self.emitter_list:
@@ -331,7 +394,7 @@ class MyGame(arcade.Window):
         """
         if key == arcade.key.UP or key == arcade.key.W:
             if self.physics_engine.can_jump():
-                if self.player_good == True:
+                if self.player_mode == "god":
                     self.player_sprite.change_y = PlAYER_JUMP_SPEED_GOOD
                 else: self.player_sprite.change_y = PlAYER_JUMP_SPEED_BAD
         elif key == arcade.key.LEFT or key == arcade.key.A:
