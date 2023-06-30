@@ -18,7 +18,7 @@ TILE_WIDTH = 42
 GRAVITY = 0.5
 
 PLAYER_MOVEMENT_SPEED = 5
-PlAYER_JUMP_SPEED_BAD = 13
+PlAYER_JUMP_SPEED_BAD = 14
 PlAYER_JUMP_SPEED_GOOD = 9
 PLAYER_GRAPHIC =  {
     "god_idle": arcade.load_texture("images/tile_0019.png"),
@@ -356,6 +356,8 @@ class MyGame(arcade.Window):
 
             if number_of_taken_flags == len(self.scene[LAYER_NAME_SAVE_POINTS]):
                 score = (self.collected_coins/self.timer) * 100
+                print(self.timer)
+                print(self.collected_coins)
                 print(f"level {self.level} score: {round(score)}")
                 self.level += 1
                 self.setup()
@@ -374,8 +376,6 @@ class MyGame(arcade.Window):
         # Update emitters
         for e in self.emitter_list:
             e.update()
-
-
                 
 
     def keyboard_control(self):
