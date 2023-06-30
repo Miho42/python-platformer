@@ -121,6 +121,9 @@ class MyGame(arcade.Window):
         for sp in self.scene[LAYER_NAME_SAVE_POINTS]:
             sp.taken = False
 
+        # Timer
+        self.timer = 0
+
     def center_camera_to_player(self, camera_scroll_speed=CAMERA_SCROLL_SPEED):
         """
         Moves camera to player
@@ -250,7 +253,9 @@ class MyGame(arcade.Window):
         """
         Movement and game logic
         """
-
+        # Count time
+        self.timer += delta_time
+        
         # Move the player with the physics engine
         self.physics_engine.update()
         
@@ -290,7 +295,8 @@ class MyGame(arcade.Window):
                     number_of_taken_flags += 1
 
             if number_of_taken_flags == len(self.scene[LAYER_NAME_SAVE_POINTS]):
-                print(f"level {self.level} score: {self.collected_coins}")
+                score = round(self.collected_coins/self.timer)
+                print(f"level {self.level} score: {score}")
                 self.level += 1
                 self.setup()
 
