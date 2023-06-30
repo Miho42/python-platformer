@@ -81,9 +81,7 @@ class MyGame(arcade.Window):
         }
 
         # Read in the tiled map
-        #self.tile_map = arcade.load_tilemap(f"map0{self.level}.tmx", TILE_SCALING, layer_options)
-
-        self.tile_map = arcade.load_tilemap(f"map02.tmx", TILE_SCALING, layer_options)
+        self.tile_map = arcade.load_tilemap(f"map0{self.level}.tmx", TILE_SCALING, layer_options)
 
         # Initialize scene with tile_map, this will automatically add all
         # layers from the map as SpriteLists to the scene
